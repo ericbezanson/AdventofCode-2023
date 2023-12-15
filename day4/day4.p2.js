@@ -231,27 +231,36 @@ Card 219: 44 83  7 80 68 17 15  4 45 31 | 41 57 52 79 99 49 98 17 28 82 55 93 50
 Card 220: 34 88 44 16 90  6 58 94 64 73 |  5 70 76 53 15 68 28  4 32 65 92 91 24 86 85 31 36 67 83 18 95 45  8 51 74
 `
 
-const devInput2 = `
-Card   1: 79  1  6  9 88 95 84 69 83 97 | 42 95  1  6 71 69 61 99 84 12 32 96  9 82 88 97 53 24 28 65 83 38  8 68 79
-`
-// Function to parse the input string and build results object
 function parseDevInput(input) {
     const cardsArray = input.trim().split('\n');
     const result = {};
 
     cardsArray.forEach((card) => {
         const [cardKey, cardValues] = card.split(':').map((item) => item.trim());
-        const cardName = cardKey.split(' ')[1].trim();
+
+        // Extract the card number using a regular expression
+        const match = cardKey.match(/Card\s+(\d+)/);
+        if (!match) {
+            // Handle invalid input or notify about the error
+            console.error(`Invalid card format: ${card}`);
+            return;
+        }
+        const cardName = match[1];
 
         // Convert non-numeric values to 0 in winners and numbers arrays
-        const winners = cardValues.split('|')[0].trim().split(' ').map((num) => parseFloat(num) || 0);
-        const numbers = cardValues.split('|')[1].trim().split(' ').map((num) => parseFloat(num) || 0);
+        const winners = cardValues.split('|')[0].trim().split(/\s+/).map((num) => isNaN(Number(num.trim())) ? 0 : Number(num.trim()));
+        const numbers = cardValues.split('|')[1].trim().split(/\s+/).map((num) => isNaN(Number(num.trim())) ? 0 : Number(num.trim()));
 
         result[`Card${cardName}`] = { winners, numbers };
     });
 
+    console.log("Result", result);
     return result;
 }
+
+const parsedInput = parseDevInput(prodInput);
+
+
 
 function calcTotalPoints(arr) {
     let pointTotal = 0
@@ -274,9 +283,9 @@ function calcTotalPoints(arr) {
         pointTotal = pointTotal + points
         pointTotals.push(points)
     }
-
-
+    console.log("ANSWER: Point Total: ", pointTotal)
 }
+
 function findMatches(result) {
 
     const keys = Object.keys(result)
@@ -284,15 +293,16 @@ function findMatches(result) {
     for (i = 0; i < keys.length; i++) {
         let game = result[keys[i]]
         const gameMatches = game.numbers.filter(n => game.winners.includes(n));
-        console.log("GAME MATCHES", gameMatches)
 
         if (gameMatches.length > 0) {
             allMatches.push(gameMatches.length)
         }
+
+        console.log("all matches", allMatches)
     }
     calcTotalPoints(allMatches)
 }
 
 // Call the function with the input string
-const result = parseDevInput(prodInput);
+const result = parseDevInput(devInput);
 findMatches(result)
